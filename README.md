@@ -1,2 +1,2 @@
 # P2_datascientest
-Api pour teste notre modele ML por detecte fraud dans achats en ligne
+Api pour teste notre modèle ML pour detecter des transactions frauduleuses dans achats en ligne.
