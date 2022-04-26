@@ -228,10 +228,15 @@ class FraudTypePredictionProba(BaseModel):
   isFraud : float
   notFraud : float
 
+
 class FraudTypePredictionResponse(BaseModel):
   predicted_class : int
   proba : FraudTypePredictionProba 
 
+
+class FraudTypePerfResponse(BaseModel):
+    recall:float
+    accuracy:float
 
 
 @api.post("/PredictionModelKnn", tags = ['prediction'], response_model=FraudTypePredictionResponse)
@@ -255,5 +260,24 @@ async def make_prediction_logreg(data : FraudMeasurementData) :
           'isFraud' : 0.4,
           'notFraud' :0.6,
       },
+  }
+
+
+
+@api.post("/PerfKnn", tags = ['performances'], response_model=FraudTypePerfResponse)
+async def give_performances_knn() :
+
+  return {
+      'recall' : 0.7,
+      'accuracy' : 0.7
+  }
+
+
+@api.post("/PerfLogReg", tags = ['performances'], response_model=FraudTypePerfResponse)
+async def give_performances_logreg() :
+
+  return {
+      'recall' : 0.7,
+      'accuracy' : 0.7
   }
 
