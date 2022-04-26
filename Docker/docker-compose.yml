@@ -1,0 +1,38 @@
+version: "3.9"
+services:
+  api_sentiment:
+    image: datascientest/fastapi:1.0.0
+    container_name: api_sentiment
+    networks:
+      - bridge
+    environment:
+      LOG: 1
+  test_authentication:
+    image: python_authent_test:latest
+    container_name: py_authent_test
+    networks:
+      - bridge
+    volumes:
+      - .:/home/test
+    environment:
+      LOG: 1
+  test_authorization:
+    image: python_author_test:latest
+    container_name: py_author_test
+    networks:
+      - bridge  
+    volumes:
+      - .:/home/test
+    environment:
+      LOG: 1
+  test_content:
+    image: python_content_test:latest
+    container_name: py_content_test
+    networks:
+      - bridge
+    volumes:
+      - .:/home/test
+    environment:
+      LOG: 1
+networks:
+  bridge:

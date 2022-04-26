@@ -1,0 +1,103 @@
+>>> setup.sh - Thu Apr 21 08:14:47 UTC 2022
+1... CONSTRUCTION DES IMAGES DOCKER ...
+Sending build context to Docker daemon  440.7MB
+Step 1/5 : FROM ubuntu:latest
+ ---> 825d55fb6340
+Step 2/5 : RUN apt-get update && apt-get install python3-pip -y && pip install requests
+ ---> Using cache
+ ---> 49930f09e4fa
+Step 3/5 : ADD authentication_test.py /my_server/authentication_test.py
+ ---> Using cache
+ ---> caca5e1ba589
+Step 4/5 : WORKDIR /my_server/
+ ---> Using cache
+ ---> f6e0184680b7
+Step 5/5 : CMD python3 authentication_test.py
+ ---> Using cache
+ ---> 11c752026396
+Successfully built 11c752026396
+Successfully tagged python_authent_test:latest
+Sending build context to Docker daemon  440.7MB
+Step 1/5 : FROM ubuntu:latest
+ ---> 825d55fb6340
+Step 2/5 : RUN apt-get update && apt-get install python3-pip -y && pip install requests
+ ---> Using cache
+ ---> 49930f09e4fa
+Step 3/5 : ADD authorization_test.py /my_server/authorization_test.py
+ ---> Using cache
+ ---> 06f14e78a240
+Step 4/5 : WORKDIR /my_server/
+ ---> Using cache
+ ---> a63917308df7
+Step 5/5 : CMD python3 authorization_test.py
+ ---> Using cache
+ ---> bf7fcbcb16b8
+Successfully built bf7fcbcb16b8
+Successfully tagged python_author_test:latest
+Sending build context to Docker daemon  440.7MB
+Step 1/5 : FROM ubuntu:latest
+ ---> 825d55fb6340
+Step 2/5 : RUN apt-get update && apt-get install python3-pip -y && pip install requests
+ ---> Using cache
+ ---> 49930f09e4fa
+Step 3/5 : ADD content_test.py /my_server/content_test.py
+ ---> Using cache
+ ---> a26af9d340f7
+Step 4/5 : WORKDIR /my_server/
+ ---> Using cache
+ ---> b88b9cfc0fac
+Step 5/5 : CMD python3 content_test.py
+ ---> Using cache
+ ---> d644da5d3cf8
+Successfully built d644da5d3cf8
+Successfully tagged python_content_test:latest
+2... LANCEMENT DES CONTENEURS DE TEST ...
+Attaching to py_author_test, api_sentiment, py_authent_test, py_content_test
+[36mapi_sentiment          |[0m INFO:     Started server process [7]
+[36mapi_sentiment          |[0m INFO:     Waiting for application startup.
+[36mapi_sentiment          |[0m INFO:     Application startup complete.
+[36mapi_sentiment          |[0m INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+[36mapi_sentiment          |[0m INFO:     192.168.96.5:35670 - "GET /permissions?username=alice&password=wonderland HTTP/1.1" 200 OK
+[36mapi_sentiment          |[0m INFO:     192.168.96.5:35672 - "GET /permissions?username=bob&password=builder HTTP/1.1" 200 OK
+[36mapi_sentiment          |[0m INFO:     192.168.96.5:35674 - "GET /permissions?username=clementine&password=mandarine HTTP/1.1" 403 Forbidden
+[33mpy_authent_test        |[0m 2022/04/21-08:15:08 : Authentication_Test_#1 : Status=200 : Test=SUCCESS
+[33mpy_authent_test        |[0m 
+[33mpy_authent_test        |[0m 2022/04/21-08:15:08 : Authentication_Test_#2 : Status=200 : Test=SUCCESS
+[33mpy_authent_test        |[0m 
+[33mpy_authent_test        |[0m 2022/04/21-08:15:08 : Authentication_Test_#3 : Status=403 : Test=SUCCESS
+[33mpy_authent_test        |[0m 
+[33mpy_authent_test exited with code 0
+[0m[36mapi_sentiment          |[0m INFO:     192.168.96.2:58198 - "GET /v1/sentiment?username=alice&password=wonderland&sentence=test HTTP/1.1" 200 OK
+[36mapi_sentiment          |[0m INFO:     192.168.96.2:58200 - "GET /v1/sentiment?username=bob&password=builder&sentence=test HTTP/1.1" 200 OK
+[36mapi_sentiment          |[0m INFO:     192.168.96.2:58202 - "GET /v1/sentiment?username=clementine&password=mandarine&sentence=test HTTP/1.1" 403 Forbidden
+[36mapi_sentiment          |[0m INFO:     192.168.96.2:58204 - "GET /v2/sentiment?username=alice&password=wonderland&sentence=test HTTP/1.1" 200 OK
+[36mapi_sentiment          |[0m INFO:     192.168.96.2:58206 - "GET /v2/sentiment?username=bob&password=builder&sentence=test HTTP/1.1" 403 Forbidden
+[36mapi_sentiment          |[0m INFO:     192.168.96.2:58208 - "GET /v2/sentiment?username=clementine&password=mandarine&sentence=test HTTP/1.1" 403 Forbidden
+[32mpy_author_test         |[0m 2022/04/21-08:15:10 : Authorization_Test_#1 : Status=200 : Test=SUCCESS
+[32mpy_author_test         |[0m 
+[32mpy_author_test         |[0m 2022/04/21-08:15:10 : Authorization_Test_#2 : Status=200 : Test=SUCCESS
+[32mpy_author_test         |[0m 
+[32mpy_author_test         |[0m 2022/04/21-08:15:10 : Authorization_Test_#3 : Status=403 : Test=SUCCESS
+[32mpy_author_test         |[0m 
+[32mpy_author_test         |[0m 2022/04/21-08:15:10 : Authorization_Test_#4 : Status=200 : Test=SUCCESS
+[32mpy_author_test         |[0m 
+[32mpy_author_test         |[0m 2022/04/21-08:15:10 : Authorization_Test_#5 : Status=403 : Test=SUCCESS
+[32mpy_author_test         |[0m 
+[32mpy_author_test         |[0m 2022/04/21-08:15:10 : Authorization_Test_#6 : Status=403 : Test=SUCCESS
+[32mpy_author_test         |[0m 
+[32mpy_author_test exited with code 0
+[0m[36mapi_sentiment          |[0m INFO:     192.168.96.4:38650 - "GET /v1/sentiment?username=alice&password=wonderland&sentence=life+is+beautiful HTTP/1.1" 200 OK
+[36mapi_sentiment          |[0m INFO:     192.168.96.4:38652 - "GET /v1/sentiment?username=alice&password=wonderland&sentence=that+sucks HTTP/1.1" 200 OK
+[36mapi_sentiment          |[0m INFO:     192.168.96.4:38654 - "GET /v2/sentiment?username=alice&password=wonderland&sentence=life+is+beautiful HTTP/1.1" 200 OK
+[36mapi_sentiment          |[0m INFO:     192.168.96.4:38656 - "GET /v2/sentiment?username=alice&password=wonderland&sentence=that+sucks HTTP/1.1" 200 OK
+[35mpy_content_test        |[0m 2022/04/21-08:15:12 : Content_Test_#1 : Status=200 : Score=0.5994 : Test=SUCCESS
+[35mpy_content_test        |[0m 
+[35mpy_content_test        |[0m 2022/04/21-08:15:12 : Content_Test_#2 : Status=200 : Score=-0.3612 : Test=SUCCESS
+[35mpy_content_test        |[0m 
+[35mpy_content_test        |[0m 2022/04/21-08:15:12 : Content_Test_#3 : Status=200 : Score=0.5994 : Test=SUCCESS
+[35mpy_content_test        |[0m 
+[35mpy_content_test        |[0m 2022/04/21-08:15:12 : Content_Test_#4 : Status=200 : Score=-0.3612 : Test=SUCCESS
+[35mpy_content_test        |[0m 
+[35mpy_content_test exited with code 0
+[0m[36mapi_sentiment exited with code 137
+[0m
