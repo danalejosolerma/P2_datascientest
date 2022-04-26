@@ -10,6 +10,7 @@ import pandas as pd
 from helpers import *
 from requests import *
 from typing import List
+from pickle import FLOAT
 from fastapi import FastAPI
 from fastapi import Header
 from fastapi import Depends
@@ -31,11 +32,6 @@ from passlib.context import CryptContext
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #   datas
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-responses = ['question','responseA', 'responseB', 'responseC', 'responseD']
-
-
-nb_questions = [5, 10, 20]
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -67,8 +63,6 @@ fake_users_db = {
 
 # On charge les données
 
-db_questions = pd.read_csv('questions.csv')
-
 API_URL = "http://127.0.0.1:8000"
 
 SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
@@ -82,8 +76,8 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-api = FastAPI(title="Generateur de questionnaires",
-    description="Cette API interroge une base de données pour retourner une serie de questions.",
+api = FastAPI(title="Détecteur fr fraudes",
+    description="Cette API interroge des modèles de machine learning pour déterminer si une transaction est frauduleuse ou pas.",
     version="1.0.1")
 
 
@@ -92,7 +86,7 @@ api = FastAPI(title="Generateur de questionnaires",
 # Message de bienvenue
 @api.get('/')
 def get_index():
-    return {'Bienvenue à votre test. Nous vous souhaitons bonne chance !'}
+    return {'Bienvenue au détecteur de transactions frauduleuses !'}
 
 
 
@@ -106,7 +100,6 @@ class Token(BaseModel):
     message: str
 
 
-
 class TokenData(BaseModel):
     username: Optional[str] = None
 
@@ -115,6 +108,13 @@ class User(BaseModel):
     username: str
     email: Optional[str] = None
     disabled: Optional[bool] = None
+
+
+class User_me(BaseModel):
+    username: str
+    password: Optional[str] = None
+    disabled: Optional[bool] = None
+
 
 class UserInDB(User):
     password: str
@@ -199,130 +199,61 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     return {"access_token": access_token, "token_type": "bearer","message":f"Bienvenue {user.username} !"}
 
 
-@api.get("/users/me/", response_model=User,tags=['infos'])
+@api.get("/users/me/", response_model=User_me,tags=['infos'])
 async def read_users_me(current_user: User = Depends(get_current_active_user)):
-    print(current_user)
-    return current_user
+    user = {'username':current_user.username,
+	    'password':'*******************',
+	    'disabled':current_user.disabled}
+    return user
 
 
 
 @api.get("/users/me/ressources/",tags=['infos'])
 async def read_own_items(current_user: User = Depends(get_current_active_user)):
-    return [{"ressources": "test reussi", "owner": current_user.username}]
+    return [{"ressources": "Nature de votre transaction : ...", "owner": current_user.username}]
 
 
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-class response_mondel_demande(BaseModel):
-    question: str
-    responseA: str
-    responseB: str
-    responseC: Optional[str]
-    responseD: Optional[str]
-
-
-
-# Génération de questionnaires 
-class Demande(BaseModel):
-    use: Optional[str] = db_questions.use[random.choice(range(10))]
-    subject: Optional[str] = db_questions.subject[random.choice(range(10))]
-    number: Optional[int]=random.choice([5,10,20])
-
-@api.post('/test',tags=['demandes'])
-async def passer_test(test:Demande):
-    """
-    Cette fonction permet de générer un questionnaire en fonction des arguments fournis !
-    """
-
-    # l'utilisateur doit pouvoir choisir un type de test et une ou plusieurs catégories
-    uniques_subjects = db_questions.subject.unique()
-    if test.subject in uniques_subjects:
-        choix_categories = test.subject
-    else : choix_categories=None
-    
-
-    if ((choix_categories == None) or (test.use not in db_questions.use.tolist())):
-        raise HTTPException(status_code = 404, detail = 'La combinaison catégorie - type de test est incorrecte.')
-
-    elif test.number not in nb_questions:
-        raise HTTPException(status_code=404, detail="Choisir un nombre parmi 5, 10 et 20")
-
-    else:
-       
-        db = db_questions.loc[db_questions.subject == test.subject]
-
-        db = db.loc[db.use == test.use]
-        
-        # Ici on a des Nan : on les remplace par 'Je ne sais pas' 
-        db = db.fillna('Je ne sais pas')
-
-        if len(db):
-            if test.number > len(db):
-                questions = db[responses].to_dict(orient = 'records')
-                
-            else:
-                questions = db.sample(n = test.number)[responses].to_dict(orient = 'records') # Nature aléatoire
-        else:
-            questions = {
-                'message' : "Nous ne pouvons pas satisfaire votre demande. Veuillez réessayer ulterieurement!."
-            }
-    return questions
-
+# Predictions
 
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-# Ajout d'une nouvelle question par l'administrateur
-class Question(BaseModel):
-    question: str
-    subject: str
-    use: str
-    correct: str
-    responseA: str
-    responseB: str
-    responseC: Optional[str]
-    responseD: Optional[str]
-    remark:Optional[str]
-
-@api.post('/add_questions',tags=['add'])
-def add_question(question:Question, username:str, password:str):
-
-    """ Un administrateur peut ajouter une question grâce à son identifiant et son mot de passe.
-    """
-    if (username =='admin') and (password == '4dm1N'):
-
-        global db_questions
-        new_question={}
+class FraudMeasurementData(BaseModel):
+  var1 : float
+  var2: float
 
 
-        new_question['question']= question.question,
-        new_question['subject']= question.subject,
-        new_question['use']= question.use,
-        new_question['correct']= question.correct,
-        new_question['responseA']= question.responseA,
-        new_question['responseB']= question.responseB,
-        new_question['responseC']= question.responseC,
-        new_question['responseD']= question.responseD,
-        new_question['remark']=question.remark
+class FraudTypePredictionProba(BaseModel):
+  isFraud : float
+  notFraud : float
 
-
-        new_question = pd.DataFrame(new_question)
-
-
-        db_questions = pd.concat([new_question,db_questions]).reset_index(drop = True)
-
-        return {
-        'message' : "Votre question a bien été ajoutée.",
-        'question ajoutée' : db_questions.head(1)
-        }
-    else:
-        return {
-        'message' : "Echec d'identification ! Vous ne pouvez pas effectuer cette opération."
-        }
-
-# ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+class FraudTypePredictionResponse(BaseModel):
+  predicted_class : int
+  proba : FraudTypePredictionProba 
 
 
 
+@api.post("/PredictionModelKnn", tags = ['prediction'], response_model=FraudTypePredictionResponse)
+async def make_prediction_knn(data : FraudMeasurementData) :
+
+  return {
+      'predicted_class' : 1,
+      'proba' : {
+          'isFraud' : 0.4,
+          'notFraud' : 0.6,
+      },
+  }
 
 
-   
+@api.post("/PredictionModelLogreg", tags = ['prediction'], response_model=FraudTypePredictionResponse)
+async def make_prediction_logreg(data : FraudMeasurementData) :
+
+  return {
+      'predicted_class' : 1,
+      'proba' : {
+          'isFraud' : 0.4,
+          'notFraud' :0.6,
+      },
+  }
+
