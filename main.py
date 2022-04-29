@@ -11,22 +11,17 @@ from helpers import *
 from requests import *
 from typing import List
 from pickle import FLOAT
-from fastapi import FastAPI
-from fastapi import Header
-from fastapi import Depends
 from typing import Optional
 from pydantic import BaseModel
 from jose import JWTError, jwt
-from fastapi import HTTPException
-from fastapi.security import HTTPBearer
 from datetime import datetime, timedelta
 from passlib.context import CryptContext
+
+from fastapi import Depends,FastAPI, Header,HTTPException, Body,status
 from fastapi.responses import JSONResponse
-from fastapi import Body,status
 from fastapi.encoders import jsonable_encoder
-from fastapi.security import HTTPBasic, HTTPBasicCredentials
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from passlib.context import CryptContext
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm,HTTPBasic, HTTPBasicCredentials,HTTPBearer
+
 
 
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -76,19 +71,23 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-api = FastAPI(title="Détecteur fr fraudes",
+api = FastAPI(title="Détecteur de fraudes",
     description="Cette API interroge des modèles de machine learning pour déterminer si une transaction est frauduleuse ou pas.",
     version="1.0.1")
 
 
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+
 # Message de bienvenue
 @api.get('/')
 def get_index():
-    return {'Bienvenue au détecteur de transactions frauduleuses !'}
+    return {'Message':'Bienvenue au détecteur de transactions frauduleuses !'}
 
 
+# ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Gestion des exceptions
 
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -144,7 +143,6 @@ def authenticate_user(fake_db, username: str, password: str):
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
-    print('ici')
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
@@ -155,16 +153,14 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     return encoded_jwt
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
-    print('test_current')
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
+        detail="Could not validate credentials ! You are not authenticated",
+        headers={"Message": "Wrong username or password !"},
     )
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
-        print(username)
         if username is None:
             raise credentials_exception
         token_data = TokenData(username=username)
@@ -177,7 +173,6 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
 
 
 async def get_current_active_user(current_user: User = Depends(get_current_user)):
-    print('ici 1')
     if current_user.disabled:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
@@ -190,28 +185,13 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
+            headers={'message': ('Wrong password or username. Please change or contact your admin.'),},
         )
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={"sub": user.username}, expires_delta=access_token_expires
     )
     return {"access_token": access_token, "token_type": "bearer","message":f"Bienvenue {user.username} !"}
-
-
-@api.get("/users/me/", response_model=User_me,tags=['infos'])
-async def read_users_me(current_user: User = Depends(get_current_active_user)):
-    user = {'username':current_user.username,
-	    'password':'*******************',
-	    'disabled':current_user.disabled}
-    return user
-
-
-
-@api.get("/users/me/ressources/",tags=['infos'])
-async def read_own_items(current_user: User = Depends(get_current_active_user)):
-    return [{"ressources": "Nature de votre transaction : ...", "owner": current_user.username}]
-
 
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -220,8 +200,11 @@ async def read_own_items(current_user: User = Depends(get_current_active_user)):
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 class FraudMeasurementData(BaseModel):
-  var1 : float
-  var2: float
+  purchase_value : float
+  device_id: str
+  ip_address:float
+  purchase_time:str
+  signup_time:str
 
 
 class FraudTypePredictionProba(BaseModel):
@@ -240,7 +223,7 @@ class FraudTypePerfResponse(BaseModel):
 
 
 @api.post("/PredictionModelKnn", tags = ['prediction'], response_model=FraudTypePredictionResponse)
-async def make_prediction_knn(data : FraudMeasurementData) :
+async def make_prediction_knn(data : FraudMeasurementData,current_user: User = Depends(get_current_active_user)) :
 
   return {
       'predicted_class' : 1,
@@ -252,7 +235,7 @@ async def make_prediction_knn(data : FraudMeasurementData) :
 
 
 @api.post("/PredictionModelLogreg", tags = ['prediction'], response_model=FraudTypePredictionResponse)
-async def make_prediction_logreg(data : FraudMeasurementData) :
+async def make_prediction_logreg(data : FraudMeasurementData,current_user: User = Depends(get_current_active_user)) :
 
   return {
       'predicted_class' : 1,
@@ -265,7 +248,7 @@ async def make_prediction_logreg(data : FraudMeasurementData) :
 
 
 @api.post("/PerfKnn", tags = ['performances'], response_model=FraudTypePerfResponse)
-async def give_performances_knn() :
+async def give_performances_knn(current_user: User = Depends(get_current_active_user)) :
 
   return {
       'recall' : 0.7,
@@ -274,7 +257,7 @@ async def give_performances_knn() :
 
 
 @api.post("/PerfLogReg", tags = ['performances'], response_model=FraudTypePerfResponse)
-async def give_performances_logreg() :
+async def give_performances_logreg(current_user: User = Depends(get_current_active_user)) :
 
   return {
       'recall' : 0.7,
