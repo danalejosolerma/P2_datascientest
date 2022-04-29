@@ -202,7 +202,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
 class FraudMeasurementData(BaseModel):
   purchase_value : float
   device_id: str
-  ip_address:float
+  ip_address:str
   purchase_time:str
   signup_time:str
 
@@ -221,6 +221,22 @@ class FraudTypePerfResponse(BaseModel):
     recall:float
     accuracy:float
 
+#with open('features.json', 'r') as f :
+    #features = json.load(f)
+
+#knn_classifier = joblib.load('knn_classifier.joblib')
+#logreg_classifier = joblib.load('logreg_classifier.joblib')
+#svm_classifier = joblib.load('svm_classifier.joblib')
+
+@api.get("/features",tags = ['features'])
+def get_features() :
+  return {
+    'purchase_value' :34,
+    'device_id': 'QVPSPJUOCKZAR',
+    'ip_address':'127.0.0.0',
+    'purchase_time':'2015-04-18 2:47:11',
+    'signup_time':'2015-02-24 22:55:49',
+  }
 
 @api.post("/PredictionModelKnn", tags = ['prediction'], response_model=FraudTypePredictionResponse)
 async def make_prediction_knn(data : FraudMeasurementData,current_user: User = Depends(get_current_active_user)) :
