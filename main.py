@@ -1,6 +1,8 @@
 # Librairies
 import uvicorn
 import json
+import joblib
+import sklearn
 import random
 import helpers
 import secrets
@@ -15,7 +17,7 @@ from pydantic import BaseModel
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
 from passlib.context import CryptContext
-
+from sklearn.metrics import recall_score, accuracy_score
 from fastapi import Depends,FastAPI, Header,HTTPException, Body,status
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
@@ -166,7 +168,6 @@ def get_password_hash(password):
 def get_user(db, username: str):
     if username in db:
         user_dict = db[username]
-        print('ICI',user_dict)
         return UserInDB(**user_dict)
 
 
@@ -245,8 +246,8 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 class FraudMeasurementData(BaseModel):
   purchase_value : float
-  purchase_time=datetime.fromtimestamp(1528794323)
-  signup_time=datetime.fromtimestamp(152879432)
+  purchase_time=datetime.fromtimestamp(1528794338)
+  signup_time=datetime.fromtimestamp(1528794326)
 
 
 class FraudTypePredictionProba(BaseModel):
@@ -263,43 +264,64 @@ class FraudTypePerfResponse(BaseModel):
     recall:float
     f1_score:float
 
-#with open('features.json', 'r') as f :
-    #features = json.load(f)
+with open('./ML_models/features.json', 'r') as f :
+    features = json.load(f)
 
-#knn_classifier = joblib.load('knn_classifier.joblib')
-#logreg_classifier = joblib.load('logreg_classifier.joblib')
-#svm_classifier = joblib.load('svm_classifier.joblib')
+knn_classifier = joblib.load('./ML_models/knn_classifier.joblib')
+logreg_classifier = joblib.load('./ML_models/logreg_classifier.joblib')
+
 
 @api.get("/features",tags = ['features'])
 def get_features() :
   return {
     'purchase_value' :34,
-    'purchase_time': datetime.fromtimestamp(1528794323),
+    'purchase_time': datetime.fromtimestamp(1528794326),
     'signup_time':datetime.fromtimestamp(1528794323),
   }
 
 @api.post("/PredictionModelKnn", tags = ['prediction'], response_model=FraudTypePredictionResponse)
 async def make_prediction_knn(data : FraudMeasurementData,current_user: User = Depends(get_current_active_user)) :
-  print(data.purchase_time - data.signup_time)
-  return {
-      'predicted_class' : 1,
-      'proba' : {
-          'isFraud' : 0.4,
-          'notFraud' : 0.6,
-      },
-  }
+    try:
+        data = pd.DataFrame([data.dict()])
+        data['tot_time']=(data['purchase_time'] - data['signup_time']).apply(lambda t: t.total_seconds()/3600)
+        data.tot_time = data.tot_time.apply(lambda x: -1/x)
+        data = data[features]
+        predicted_class = knn_classifier.predict(data)[0]
+        predicted_proba = knn_classifier.predict_proba(data)[0].tolist()
+
+        return {
+            'predicted_class' : int(predicted_class),
+            'proba' : {
+                'isFraud' : predicted_proba[1],
+                'notFraud' : predicted_proba[0],
+            },
+        }
+    except IndexError:
+        raise MyException(
+            status_code=422,
+            name='Error - Invalid(s) parameter(s)',
+            date=str(datetime.now()),
+            message="Check authorized values in endpoint's features. Check "
+                    "available values in the database at the endpoint '/features'."
+        )
 
 
 @api.post("/PredictionModelLogreg", tags = ['prediction'], response_model=FraudTypePredictionResponse)
 async def make_prediction_logreg(data : FraudMeasurementData,current_user: User = Depends(get_current_active_user)) :
     
     try :
-        # A completer
+        data = pd.DataFrame([data.dict()])
+        data['tot_time']=(data['purchase_time'] - data['signup_time']).apply(lambda t: t.total_seconds()/3600)
+        data.tot_time = data.tot_time.apply(lambda x: -1/x)
+        data = data[features]
+        predicted_class = logreg_classifier.predict(data)[0]
+        predicted_proba = logreg_classifier.predict_proba(data)[0].tolist()
+        
         return {
-            'predicted_class' : 1,
+            'predicted_class' : int(predicted_class),
             'proba' : {
-                'isFraud' : 0.4,
-                'notFraud' :0.6,
+                'isFraud' : predicted_proba[1],
+                'notFraud' : predicted_proba[0],
             },
         }
     
@@ -314,18 +336,31 @@ async def make_prediction_logreg(data : FraudMeasurementData,current_user: User 
     
 @api.post("/PerfKnn", tags = ['performances'], response_model=FraudTypePerfResponse)
 async def give_performances_knn() :
+    data_test = pd.read_csv('./ML_models/data_test.csv')
+    X_test = data_test.drop('is_fraud',axis=1)
+    y_test = data_test['is_fraud']
+    y_pred = knn_classifier.predict(X_test)
+    score = accuracy_score(y_test,y_pred)
+    rec = recall_score(y_test,y_pred)
 
-  return {
-      'recall' : 0.7,
-      'f1_score' : 0.7
-  }
+    return {
+        'recall' : rec,
+        'f1_score' : score
+    }
 
 
 @api.post("/PerfLogReg", tags = ['performances'], response_model=FraudTypePerfResponse)
 async def give_performances_logreg() :
 
-  return {
-      'recall' : 0.7,
-      'f1_score' : 0.7
-  }
+    data_test = pd.read_csv('./ML_models/data_test.csv')
+    X_test = data_test.drop('is_fraud',axis=1)
+    y_test = data_test['is_fraud']
+    y_pred = logreg_classifier.predict(X_test)
+    score = accuracy_score(y_test,y_pred)
+    rec = recall_score(y_test,y_pred)
+
+    return {
+        'recall' : rec,
+        'f1_score' : score
+    }
 
