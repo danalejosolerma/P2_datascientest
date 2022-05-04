@@ -264,11 +264,11 @@ class FraudTypePerfResponse(BaseModel):
     recall:float
     f1_score:float
 
-with open('./ML_models/features.json', 'r') as f :
+with open('/my_server/features.json', 'r') as f :
     features = json.load(f)
 
-knn_classifier = joblib.load('./ML_models/knn_classifier.joblib')
-logreg_classifier = joblib.load('./ML_models/logreg_classifier.joblib')
+knn_classifier = joblib.load('/my_server/knn_classifier.joblib')
+logreg_classifier = joblib.load('/my_server/logreg_classifier.joblib')
 
 
 @api.get("/features",tags = ['features'])
