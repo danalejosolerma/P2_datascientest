@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+ name: fraud-deploy
+spec:
+ selector:
+  matchLabels:
+   app: my-deploy-api
+ replicas: 3
+ template:
+  metadata:
+   labels:
+    app: my-deploy-api
+  spec:
+   containers:
+   - name: api-fraud
+     image: image_fraud:latest
+     imagePullPolicy: Never
+     ports:
+     - containerPort: 8000
+   - name: tests-api
+     image: image_tests:latest
+     imagePullPolicy: Never
+     ports:
+     - containerPort: 5000
