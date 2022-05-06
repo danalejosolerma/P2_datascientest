@@ -16,6 +16,7 @@ import datetime as dt
 """
 
 
+
 ####################################
 #######
 ####     1. DEFINITION DES VARIABLES
@@ -32,7 +33,7 @@ api_port = 8000
 log_file = '/home/ubuntu/api_test.log'
 
 # attente du démarrage de l'API + timestamp du test
-time.sleep(1)
+time.sleep(10)
 ts = dt.datetime.now().strftime("%Y/%m/%d-%H:%M:%S")
 
 
@@ -64,10 +65,8 @@ test_set = {
             "predict_O_in_test_set": {
                 'features': {
                     'purchase_value': 0,
-                    'device_id': 'a',
-                    'ip_address': 'b',
-                    'purchase_time': 'c',
-                    'signup_time': 'd'
+                    'purchase_time': "2018-06-12T09:05:38",
+                    'signup_time': "2018-06-12T09:05:26"
                 },
                 'target_KNN': {
                           "predicted_class": 0,
@@ -87,10 +86,8 @@ test_set = {
             "predict_1_in_test_set": {
                 'features': {
                     'purchase_value': 0,
-                    'device_id': 'a',
-                    'ip_address': 'b',
-                    'purchase_time': 'c',
-                    'signup_time': 'd'
+                    'purchase_time': "2018-06-12T09:05:38",
+                    'signup_time': "2018-06-12T09:05:26"
                 },
                 'target_KNN': {
                           "predicted_class": 0,
@@ -110,33 +107,23 @@ test_set = {
             "random_test": {
                 'features': {
                     'purchase_value': 0,
-                    'device_id': 'a',
-                    'ip_address': 'b',
-                    'purchase_time': 'c',
-                    'signup_time': 'd',
-                    'target':np.nan
+                    'purchase_time': "2019-01-12T09:05:38",
+                    'signup_time': "2019-01-12T09:05:33"
                 },
                 'target': np.nan
             },
             "wrong_type_test": {
                 'features': {
-                    'purchase_value': 0,
-                    'device_id': 'a',
-                    'ip_address': 'b',
-                    'purchase_time': 'c',
-                    'signup_time': 'd',
-                    'target':np.nan
+                    'purchase_value': 'bad',
+                    'purchase_time': "2018-06-12T09:05:38",
+                    'signup_time': "2018-06-12T09:05:26"
                 },
                 'target': np.nan
             },
             "missing_value_test": {
                 'features': {
-                    'purchase_value': 0,
-                    'device_id': 'a',
-                    'ip_address': 'b',
-                    'purchase_time': 'c',
-                    'signup_time': 'd',
-                    'target':np.nan
+                    'purchase_time': "2018-06-12T09:05:38",
+                    'signup_time': "2018-06-12T09:05:26"
                 },
                 'target': np.nan
             }
@@ -170,7 +157,7 @@ reqs['/'] = r
 
 
 ######
-###      3.1.2 Endpoint '/token' avec ('alice', 'wonderland')
+###      3.1.2 Endpoint '/signin' avec ('alice', 'wonderland')
 # 
 
 headers = {
@@ -186,14 +173,14 @@ data = {
     'client_secret': '',
 }
 
-r = requests.post(url='http://{address}:{port}/token'.format(address=api_address, port=api_port), \
+r = requests.post(url='http://{address}:{port}/signin'.format(address=api_address, port=api_port), \
                        headers=headers, data=data
 )
-reqs["/token (alice:wonderland)"] = r
+reqs["/signin (alice:wonderland)"] = r
 
 
 ######
-###      3.1.3 Endpoint '/token' avec ('clementine', 'mandarine')
+###      3.1.3 Endpoint '/signin' avec ('clement', 'mandarine')
 # 
 
 headers = {
@@ -202,16 +189,16 @@ headers = {
 
 data = {
     'grant_type': '',
-    'username': 'clementine',
+    'username': 'clement',
     'password': 'mandarine',
     'scope': '',
     'client_id': '',
     'client_secret': '',
 }
-r = requests.post(url='http://{address}:{port}/token'.format(address=api_address, port=api_port), \
+r = requests.post(url='http://{address}:{port}/signin'.format(address=api_address, port=api_port), \
                        headers=headers, data=data
 )
-reqs["/token (clementine:mandarine)"] = r
+reqs["/signin (clement:mandarine)"] = r
 
 
 ######
@@ -296,7 +283,7 @@ data = {
     'client_secret': '',
 }
 
-r = requests.post(url='http://{address}:{port}/token'.format(address=api_address, port=api_port), \
+r = requests.post(url='http://{address}:{port}/signin'.format(address=api_address, port=api_port), \
                        headers=headers, data=data
 )
 
@@ -382,7 +369,7 @@ Test OP_2 : OP_IS_SERVICE_UP_MSG_OK
 ============================
 
 Test AA_1 : AA_DOES_ALICE_CONNECTION_WORK
-| endpoint = '/token'
+| endpoint = '/signin'
 | username = 'alice'
 | password = 'wonderland'
 | expected result = 200
@@ -390,23 +377,23 @@ Test AA_1 : AA_DOES_ALICE_CONNECTION_WORK
 | ==>  {test_status}
 
 Test AA_2 : AA_IS_ALICE_CONNECTION_MSG_OK
-| endpoint = '/token'
+| endpoint = '/signin'
 | username = 'alice'
 | password = 'wonderland'
 | expected result = "Bienvenue alice !"
 | actual result = {message}
 | ==>  {test_message}
 
-Test AA_3 : AA_DOES_CLEMENTINE_CONNECTION_FAIL
-| endpoint = '/token'
-| username = 'clementine'
+Test AA_3 : AA_DOES_CLEMENT_CONNECTION_FAIL
+| endpoint = '/signin'
+| username = 'clement'
 | password = 'mandarine'
 | expected result = 403 (ou 401 ?)
 | actual result = {status_code}
 | ==>  {test_status}
 
-Test AA_4 : AA_IS_CLEMENTINE_CONNECTION_MSG_OK
-| endpoint = '/token'
+Test AA_4 : AA_IS_CLEMENT_CONNECTION_MSG_OK
+| endpoint = '/signin'
 | username = 'alice'
 | password = 'wonderland'
 | expected result = "XXXXXXX"
@@ -425,25 +412,25 @@ Test AA_6 : AA_DOES_PERFLOGREG_WORK
 | actual result = {recall} & actual result = {accuracy}
 | ==>  {test_recall} & {test_accuracy}
 
-Test AA_7 : AA_DOES_CLEMENTINE_KNNPREDICTION_FAIL
+Test AA_7 : AA_DOES_CLEMENT_KNNPREDICTION_FAIL
 | endpoint = '/PredictionModelKnn'
 | expected result = 401
 | actual result = {status_code}
 | ==>  {test_status}
 
-Test AA_8 : AA_IS_CLEMENTINE_KNNPREDICTION_FAIL_MSG_OK
+Test AA_8 : AA_IS_CLEMENT_KNNPREDICTION_FAIL_MSG_OK
 | endpoint = '/PredictionModelKnn'
 | expected result = "Not authenticated"
 | actual result = {detail}
 | ==>  {test_detail}
 
-Test AA_9 : AA_DOES_CLEMENTINE_LOGREGPREDICTION_FAIL
+Test AA_9 : AA_DOES_CLEMENT_LOGREGPREDICTION_FAIL
 | endpoint = '/PredictionModelLogreg'
 | expected result = 401
 | actual result = {status_code}
 | ==>  {test_status}
 
-Test AA_10 : AA_IS_CLEMENTINE_LOGREGPREDICTION_FAIL_MSG_OK
+Test AA_10 : AA_IS_CLEMENT_LOGREGPREDICTION_FAIL_MSG_OK
 | endpoint = '/PredictionModelLogreg'
 | expected result = "Not authenticated"
 | actual result = {detail}
@@ -630,6 +617,7 @@ def echo_log(log_line) :
     if os.environ.get('LOG') == '1':
         with open(log_file, 'a') as file :
             file.write(log_line)
+    return
 
 # Traitement des tests de status
 def test_status(test_code, response, expected_value) :
@@ -704,22 +692,22 @@ test_code_map = {
     },
     "AA_DOES_ALICE_CONNECTION_WORK":{
         'test_func':test_status, 
-        'response':reqs["/token (alice:wonderland)"], 
+        'response':reqs["/signin (alice:wonderland)"], 
         'expected_result':200
     },
     "AA_IS_ALICE_CONNECTION_MSG_OK":{
         'test_func':test_value,
-        'response':reqs["/token (alice:wonderland)"].json()['message'],
+        'response':reqs["/signin (alice:wonderland)"].json()['message'],
         'expected_result':"Bienvenue alice !"
     },
-    "AA_DOES_CLEMENTINE_CONNECTION_FAIL":{
+    "AA_DOES_CLEMENT_CONNECTION_FAIL":{
         'test_func':test_status, 
-        'response':reqs["/token (clementine:mandarine)"], 
+        'response':reqs["/signin (clement:mandarine)"], 
         'expected_result':401
     },
-#    "AA_IS_CLEMENTINE_CONNECTION_MSG_OK":{
+#    "AA_IS_CLEMENT_CONNECTION_MSG_OK":{
 #        'test_func':test_value, 
-#        'response':reqs["/token (clementine:mandarine)"].json()['detail'], 
+#        'response':reqs["/token (clement:mandarine)"].json()['detail'], 
 #        'expected_result':'Incorrect username or password'
 #    },
     "AA_DOES_PERFKNN_WORK":{
@@ -732,22 +720,22 @@ test_code_map = {
         'response':reqs["/PerfModelKnn"],
         'expected_result':200
     },
-    "AA_DOES_CLEMENTINE_KNNPREDICTION_FAIL":{
+    "AA_DOES_CLEMENT_KNNPREDICTION_FAIL":{
         'test_func':test_status,
         'response':reqs["/PredictionModelKnn - Non connecté"],
         'expected_result':401
     },
-    "AA_IS_CLEMENTINE_KNNPREDICTION_FAIL_MSG_OK":
+    "AA_IS_CLEMENT_KNNPREDICTION_FAIL_MSG_OK":
         {'test_func':test_value,
         'response':reqs["/PredictionModelKnn - Non connecté"].json()['detail'],
         'expected_result':"Not authenticated"
     },
-    "AA_DOES_CLEMENTINE_LOGREGPREDICTION_FAIL":{
+    "AA_DOES_CLEMENT_LOGREGPREDICTION_FAIL":{
         'test_func':test_status,
         'response':reqs["/PredictionModelLogreg - Non connecté"],
         'expected_result':401
     },
-    "AA_IS_CLEMENTINE_LOGREGPREDICTION_FAIL_MSG_OK":{
+    "AA_IS_CLEMENT_LOGREGPREDICTION_FAIL_MSG_OK":{
         'test_func':test_value,
         'response':reqs["/PredictionModelLogreg - Non connecté"].json()['detail'],
         'expected_result':"Not authenticated"
@@ -780,7 +768,7 @@ test_code_map = {
     "CT_IS_KNN_PREDICTRANDOM_CORRECT":{
         'test_func':test_value_consistency,
         'response':reqs['/PredictionModelKnn - Connecté - random_test'].json(),
-        'expected_result':np.nan
+        'expected_result':np.nan         # unused
     },
     "CT_DOES_KNN_PREDICTWRONGTYPE_FAIL":{
         'test_func':test_status,
@@ -867,6 +855,3 @@ for key, value in test_code_map.items() :
     expected_result = value['expected_result']
 
     echo_log(test_func(test_code, response, expected_result))
-
-
-#  https://docs.python-requests.org/en/latest/user/quickstart/#more-complicated-post-requests
