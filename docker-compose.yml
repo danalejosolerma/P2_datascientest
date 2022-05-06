@@ -5,15 +5,13 @@ services:
     container_name: api_fraud
     networks:
       - bridge
-    environment:
-      LOG: 1
   tests_api:
     image: image_tests:latest
     container_name: tests_api
     networks:
       - bridge
     volumes:
-      - .:/home/test
+      - .:/home/ubuntu
     environment:
       LOG: 1
 networks:

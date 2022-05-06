@@ -8,4 +8,4 @@ COPY main.py features.json knn_classifier.joblib logreg_classifier.joblib ./my_s
 
 WORKDIR /my_server/
 
-CMD uvicorn main:api --host 0.0.0.0
+CMD uvicorn main:api --host 0.0.0.0 --port 8000

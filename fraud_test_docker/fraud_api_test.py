@@ -24,7 +24,7 @@ import datetime as dt
 #
 
 # définition de l'adresse de l'API
-api_address = 'localhost'
+api_address = 'api_fraud'
 
 # port de l'API
 api_port = 8000
@@ -33,7 +33,7 @@ api_port = 8000
 log_file = '/home/ubuntu/api_test.log'
 
 # attente du démarrage de l'API + timestamp du test
-time.sleep(10)
+time.sleep(5)
 ts = dt.datetime.now().strftime("%Y/%m/%d-%H:%M:%S")
 
 
@@ -44,7 +44,7 @@ ts = dt.datetime.now().strftime("%Y/%m/%d-%H:%M:%S")
 #
 
 """
-| Le jeu de test contient des séries de N valeurs pour tester l'interface. 
+| Le jeu de test contient des séries de N valeurs pour tester l'interface.
 | Quand elle est précisée, la valeur de 'target' correspond au résultat trouvé précédemment dans le fichier de dev
 | de l'algorithme. Vérifier que la valeur est identique permet de tester la bonne intégration de l'algorithme
 | et de l'API.
@@ -57,7 +57,7 @@ ts = dt.datetime.now().strftime("%Y/%m/%d-%H:%M:%S")
 |   - random_test : Test avec un jeu de valeur 'aléatoire' et cohérent.
 |   - wrong_type_test : test avec un jeu de valeur qui contient de mauvais types.
 |   - missing_value_test : Test avec une feature manquante.
-| 
+|
 """
 
 # Définition du test set
@@ -147,8 +147,8 @@ reqs={}
 
 
 ######
-###      3.1.1 Endpoint '/'   
-# 
+###      3.1.1 Endpoint '/'
+#
 
 r = requests.get(
     url='http://{address}:{port}/'.format(address=api_address, port=api_port),
@@ -158,7 +158,7 @@ reqs['/'] = r
 
 ######
 ###      3.1.2 Endpoint '/signin' avec ('alice', 'wonderland')
-# 
+#
 
 headers = {
     'accept': 'application/json',
@@ -181,7 +181,7 @@ reqs["/signin (alice:wonderland)"] = r
 
 ######
 ###      3.1.3 Endpoint '/signin' avec ('clement', 'mandarine')
-# 
+#
 
 headers = {
     'accept': 'application/json',
@@ -203,7 +203,7 @@ reqs["/signin (clement:mandarine)"] = r
 
 ######
 ###      3.1.4 Endpoint '/PerfKnn'
-# 
+#
 
 headers = {
     'accept': 'application/json',
@@ -217,7 +217,7 @@ reqs["/PerfKnn"] = r
 
 ######
 ###      3.1.5 Endpoint '/PerfLogReg'
-# 
+#
 
 headers = {
     'accept': 'application/json',
@@ -231,7 +231,7 @@ reqs["/PerfModelKnn"] = r
 
 ######
 ###      3.1.6 Endpoint '/PredictionModelKnn' - Non connecté
-# 
+#
 
 headers = {
     'accept': 'application/json',
@@ -246,7 +246,7 @@ reqs["/PredictionModelKnn - Non connecté"] = r
 
 ######
 ###      3.1.7 Endpoint '/PredictionModelLogreg' - Non connecté
-# 
+#
 
 headers = {
     'accept': 'application/json',
@@ -267,7 +267,7 @@ reqs["/PredictionModelLogreg - Non connecté"] = r
 
 ######
 ###      3.2.1 Récupération du bearer de alice:wonderland
-# 
+#
 
 # Authentification avec le compte alice:wonderland et récupération du token
 headers = {
@@ -478,7 +478,7 @@ Test CT_5 : CT_DOES_KNN_PREDICTRANDOM_WORK
 Test CT_6 : CT_IS_KNN_PREDICTRANDOM_CORRECT
 | endpoint = '/PredictionModelKnn'
 | testvec = 'random_test'
-| expected result = ((predicted_class==0 | predicted_class==1) 
+| expected result = ((predicted_class==0 | predicted_class==1)
 |                    & (0 =< isFraud =< 1)
 |                    & (0 =< notFraud =< 1)
 |                    & (isFraud+notFraud==1)
@@ -554,7 +554,7 @@ Test CT_15 : CT_DOES_LOGREG_PREDICTRANDOM_WORK
 Test CT_16 : CT_IS_LOGREG_PREDICTRANDOM_CORRECT
 | endpoint = '/PredictionModelLogreg'
 | testvec = 'random_test'
-| expected result = ((predicted_class==0 | predicted_class==1) 
+| expected result = ((predicted_class==0 | predicted_class==1)
 |                    & (0 =< isFraud =< 1)
 |                    & (0 =< notFraud =< 1)
 |                    & (isFraud+notFraud==1)
@@ -664,7 +664,7 @@ def test_value_consistency(test_code, response, expected_value) :
     return output.format(test_code=test_code, \
                          response=response, \
                          test_status=test_status, \
-                         ts=ts)    
+                         ts=ts)
 
 # Affichage pour les tests non développés
 def TBD(test_code, response, expected_value) :
@@ -686,13 +686,13 @@ test_code_map = {
         'expected_result':200
     },
     "OP_IS_SERVICE_UP_MSG_OK":{
-        'test_func':test_value, 
+        'test_func':test_value,
         'response':reqs['/'].json()['Message'],
         'expected_result':"Bienvenue au détecteur de transactions frauduleuses !"
     },
     "AA_DOES_ALICE_CONNECTION_WORK":{
-        'test_func':test_status, 
-        'response':reqs["/signin (alice:wonderland)"], 
+        'test_func':test_status,
+        'response':reqs["/signin (alice:wonderland)"],
         'expected_result':200
     },
     "AA_IS_ALICE_CONNECTION_MSG_OK":{
@@ -701,13 +701,13 @@ test_code_map = {
         'expected_result':"Bienvenue alice !"
     },
     "AA_DOES_CLEMENT_CONNECTION_FAIL":{
-        'test_func':test_status, 
-        'response':reqs["/signin (clement:mandarine)"], 
+        'test_func':test_status,
+        'response':reqs["/signin (clement:mandarine)"],
         'expected_result':401
     },
 #    "AA_IS_CLEMENT_CONNECTION_MSG_OK":{
-#        'test_func':test_value, 
-#        'response':reqs["/token (clement:mandarine)"].json()['detail'], 
+#        'test_func':test_value,
+#        'response':reqs["/token (clement:mandarine)"].json()['detail'],
 #        'expected_result':'Incorrect username or password'
 #    },
     "AA_DOES_PERFKNN_WORK":{
