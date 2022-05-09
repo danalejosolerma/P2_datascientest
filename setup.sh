@@ -1,4 +1,4 @@
-#!/bin/bash/
+#!/bin/bash
 # Removing older images
 docker container stop api_fraud tests_api
 docker container rm api_fraud tests_api
@@ -16,5 +16,5 @@ docker image build fraud_test_docker/. -t image_tests:latest
 docker-compose up
 
 # Creating the containers inside kubernetes
-kubectl apply -f deployment-fraud.yaml
-kubectl apply -f service-fraud.yaml
+#kubectl apply -f deployment-fraud.yaml
+#kubectl apply -f service-fraud.yaml

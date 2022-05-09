@@ -1,4 +1,4 @@
-FROM ubuntu:latest
+FROM ubuntu:20.04
 
 RUN apt-get update && apt-get install python3-pip -y curl && pip3 install fastapi requests uvicorn numpy
 
