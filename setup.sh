@@ -15,6 +15,4 @@ docker image build fraud_test_docker/. -t image_tests:latest
 # Composing file
 docker-compose up
 
-# Creating the containers inside kubernetes
-#kubectl apply -f deployment-fraud.yaml
-#kubectl apply -f service-fraud.yaml
+docker-compose down
