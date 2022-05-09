@@ -100,4 +100,7 @@ Attaching to py_author_test, api_sentiment, py_authent_test, py_content_test
 [35mpy_content_test        |[0m 
 [35mpy_content_test exited with code 0
 [0m[36mapi_sentiment exited with code 137
-[0m
+[0m1.0.0: Pulling from datascientest/fastapi
+Digest: sha256:7048b3ac7c21666f0965042eb2e9ac49849cefb67cc080b0d72ed9ad8b587b2d
+Status: Downloaded newer image for datascientest/fastapi:1.0.0
+Continue with the new image? [yN]
