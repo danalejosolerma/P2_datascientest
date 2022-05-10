@@ -336,7 +336,7 @@ async def make_prediction_logreg(data : FraudMeasurementData,current_user: User 
     
 @api.post("/PerfKnn", tags = ['performances'], response_model=FraudTypePerfResponse)
 async def give_performances_knn() :
-    data_test = pd.read_csv('./ML_models/data_test.csv')
+    data_test = pd.read_csv('/my_server/data_test.csv')
     X_test = data_test.drop('is_fraud',axis=1)
     y_test = data_test['is_fraud']
     y_pred = knn_classifier.predict(X_test)
@@ -351,8 +351,7 @@ async def give_performances_knn() :
 
 @api.post("/PerfLogReg", tags = ['performances'], response_model=FraudTypePerfResponse)
 async def give_performances_logreg() :
-
-    data_test = pd.read_csv('./ML_models/data_test.csv')
+    data_test = pd.read_csv('/my_server/data_test.csv')
     X_test = data_test.drop('is_fraud',axis=1)
     y_test = data_test['is_fraud']
     y_pred = logreg_classifier.predict(X_test)
