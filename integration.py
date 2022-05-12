@@ -38,20 +38,20 @@ def format_integration_test(test_set={},
             signup_time = integration_knn['signup_time'][id] 
         )
         target_KNN = dict(
-            predicted_class = integration_knn['is_fraud'][id],
-    #        predicted_class = integration_knn['predicted_class'][id],
-    #        proba = dict(
-    #            isFraud = integration_knn['is_fraud'][id],
-    #            notFraud = integration_knn['notFraud'][id]
-    #        )
+    #        predicted_class = integration_knn['is_fraud'][id],
+            predicted_class = integration_knn['predicted_class'][id],
+            proba = dict(
+                isFraud = integration_knn['is_fraud'][id],
+                notFraud = integration_knn['not_fraud'][id]
+            )
         )
         target_LogReg = dict(
-            predicted_class = integration_logreg['is_fraud'][id],
-    #        predicted_class = integration_logreg['predicted_class'][id],
-    #        proba = dict(
-    #            isFraud = integration_logreg['is_fraud'][id],
-    #            notFraud = integration_logreg['notFraud'][id]
-    #        )
+    #        predicted_class = integration_logreg['is_fraud'][id],
+            predicted_class = integration_logreg['predicted_class'][id],
+            proba = dict(
+                isFraud = integration_logreg['is_fraud'][id],
+                notFraud = integration_logreg['not_fraud'][id]
+            )
         )
         test_set['integration_test_'+id] = dict(
             features=features,
@@ -63,8 +63,6 @@ def format_integration_test(test_set={},
         remaining_tests-=1
         if not remaining_tests : break
     return test_set
-
-
 
 """ FORMAT TEST_SET
 
@@ -109,19 +107,7 @@ test_set = {
     "8": 44,
     "9": 78
   },
-  "tot_time": {
-    "0": -0.0008851585,
-    "1": -0.0003766472,
-    "2": -0.0004220359,
-    "3": -0.0003545583,
-    "4": -0.0004138338,
-    "5": -3600,
-    "6": -0.0003932242,
-    "7": -0.00049721,
-    "8": -0.0025107019,
-    "9": -0.0012341861
-  },
-  "is_fraud": {
+  "predicted_class": {
     "0": 0,
     "1": 1,
     "2": 0,
@@ -131,18 +117,6 @@ test_set = {
     "6": 0,
     "7": 0,
     "8": 1,
-    "9": 0
-  },
-  "prediction.csv": {
-    "0": 1,
-    "1": 0,
-    "2": 0,
-    "3": 0,
-    "4": 0,
-    "5": 1,
-    "6": 1,
-    "7": 0,
-    "8": 0,
     "9": 0
   },
   "signup_time": {
@@ -168,6 +142,30 @@ test_set = {
     "7": "2015-10-19 15:10:59",
     "8": "2015-05-03 21:43:57",
     "9": "2015-05-08 5:55:25"
+  }
+  "is_fraud": {
+    "0": 0.3454656656,
+    "1": 0.9765,
+    "2": 0.343455,
+    "3": 0.75576,
+    "4": 0.564656,
+    "5": 0.45,
+    "6": 0.8787,
+    "7": 0.7,
+    "8": 1.0,
+    "9": 0.0
+  }
+"not_fraud": {
+    "0": 0.63,
+    "1": 0.02,
+    "2": 0.65,
+    "3": 0.24,
+    "4": 0.43,
+    "5": 0.55,
+    "6": 0.13,
+    "7": 0.3,
+    "8": 0.0,
+    "9": 1.0
   }
 }
 """
