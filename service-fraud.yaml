@@ -3,11 +3,10 @@ kind: Service
 metadata:
   name: api-service
 spec:
-  type: NodePort
+  type: ClusterIP
   selector:
     app: my-deploy-api
   ports:
   - protocol: TCP
     port: 8000
     targetPort: 8000
-    nodePort: 30038
