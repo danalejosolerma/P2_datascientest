@@ -2,7 +2,7 @@ FROM ubuntu:20.04
 
 RUN apt-get update && apt-get install python3-pip -y curl && pip3 install fastapi requests uvicorn numpy
 
-ADD fraud_api_test.py /my_server/fraud_api_test.py
+ADD fraud_api_test.py integration.py output_knn.json output_logreg.json ./my_server/
 
 WORKDIR /my_server/
 
