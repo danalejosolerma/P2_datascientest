@@ -1,0 +1,2 @@
+docker image tag image_tests danielsolislerma/image_tests:latest
+docker push danielsolislerma/image_tests:latest
