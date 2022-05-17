@@ -264,11 +264,11 @@ class FraudTypePerfResponse(BaseModel):
     recall:float
     f1_score:float
 
-with open('/my_server/features.json', 'r') as f :
+with open('./my_server/features.json', 'r') as f :
     features = json.load(f)
 
-knn_classifier = joblib.load('/my_server/knn_classifier.joblib')
-logreg_classifier = joblib.load('/my_server/logreg_classifier.joblib')
+knn_classifier = joblib.load('./my_server/knn_classifier.joblib')
+logreg_classifier = joblib.load('./my_server/logreg_classifier.joblib')
 
 
 @api.get("/features",tags = ['features'])
@@ -336,7 +336,7 @@ async def make_prediction_logreg(data : FraudMeasurementData,current_user: User 
     
 @api.post("/PerfKnn", tags = ['performances'], response_model=FraudTypePerfResponse)
 async def give_performances_knn() :
-    data_test = pd.read_csv('/my_server/data_test.csv')
+    data_test = pd.read_csv('./my_server/data_test.csv')
     X_test = data_test.drop('is_fraud',axis=1)
     y_test = data_test['is_fraud']
     y_pred = knn_classifier.predict(X_test)
@@ -351,7 +351,7 @@ async def give_performances_knn() :
 
 @api.post("/PerfLogReg", tags = ['performances'], response_model=FraudTypePerfResponse)
 async def give_performances_logreg() :
-    data_test = pd.read_csv('/my_server/data_test.csv')
+    data_test = pd.read_csv('./my_server/data_test.csv')
     X_test = data_test.drop('is_fraud',axis=1)
     y_test = data_test['is_fraud']
     y_pred = logreg_classifier.predict(X_test)
