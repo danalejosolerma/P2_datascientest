@@ -13,6 +13,10 @@ docker image build fraud_docker/. -t image_fraud:latest
 docker image build fraud_test_docker/. -t image_tests:latest
 
 # Composing file
-docker-compose up
+docker-compose up -d
 
+# Erasing copied files
+cd fraud_docker/
+rm features.json knn_classifier.joblib logreg_classifier.joblib data_test.csv
+cd ..
 #docker-compose down
