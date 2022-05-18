@@ -2,11 +2,13 @@ version: "3.9"
 services:
   api_fraud:
     image: image_fraud:latest
+    #danielsolislerma/image_fraud:latest
     container_name: api_fraud
     networks:
       - bridge
   tests_api:
-    image: image_tests:latest
+    image: image_tests:latest 
+    #danielsolislerma/image_tests:latest
     container_name: tests_api
     networks:
       - bridge
