@@ -1,25 +1,28 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
- name: fraud-deploy
-spec:
- selector:
-  matchLabels:
-   app: my-deploy-api
- replicas: 3
- template:
-  metadata:
-   labels:
+  name: fraud-deployment
+  labels:
     app: my-deploy-api
-  spec:
-   containers:
-   - name: api-fraud
-     image: image_fraud:latest
-     imagePullPolicy: Never
-     ports:
-     - containerPort: 8000
-   - name: tests-api
-     image: image_tests:latest
-     imagePullPolicy: Never
-     ports:
-     - containerPort: 5000
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-deploy-api
+  template:
+    metadata:
+      labels:
+        app: my-deploy-api
+    spec:
+      containers:
+      - name: my-deploy-api
+        image: danielsolislerma/image_fraud:latest
+        ports:
+        - containerPort: 8000
+      - name: tests-api
+        image: danielsolislerma/image_tests:latest
+        env:
+        - name: ENV_MACH
+          value: "kubernetes"
+        ports:
+        - containerPort: 5000

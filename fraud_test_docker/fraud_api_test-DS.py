@@ -1,7 +1,7 @@
 #!/bin/python3
 
 ####################################
-#|  Test de l'API fraud : v1.0.2
+#|  Test de l'API fraud : v1.0.0
 ####################################
 
 
@@ -10,7 +10,6 @@ import requests
 import time
 import numpy as np
 import datetime as dt
-from integration import format_integration_test
 
 
 """ Teste les fonctions d'authentification et d'autorisation de l'API Fraud.
@@ -27,9 +26,8 @@ from integration import format_integration_test
 # définition de l'adresse de l'API
 if os.environ.get('ENV_MACH') == 'kubernetes':
     api_address = '127.0.0.1'
-else:
+else:    
     api_address = 'api_fraud'
-
 # port de l'API
 api_port = 8000
 
@@ -39,10 +37,6 @@ log_file = '/home/ubuntu/api_test.log'
 # attente du démarrage de l'API + timestamp du test
 time.sleep(10)
 ts = dt.datetime.now().strftime("%Y/%m/%d-%H:%M:%S")
-
-# Fichier jeux de test pour les tests d'intégration
-knn_file = "./output_knn.json"
-logreg_file = "./output_logreg.json"
 
 
 ####################################
@@ -137,12 +131,6 @@ test_set = {
             }
 }
 
-test_set = format_integration_test(
-                test_set=test_set,
-                path_and_name_of_knn_integration_test=knn_file,
-                path_and_name_of_logreg_integration_test=logreg_file,
-                max_number_of_tests=10)
-
 
 ####################################
 #######
@@ -163,12 +151,10 @@ reqs={}
 ######
 ###      3.1.1 Endpoint '/'
 #
-
 r = requests.get(
     url='http://{address}:{port}/'.format(address=api_address, port=api_port),
 )
 reqs['/'] = r
-
 
 ######
 ###      3.1.2 Endpoint '/signin' avec ('alice', 'wonderland')
@@ -191,7 +177,6 @@ r = requests.post(url='http://{address}:{port}/signin'.format(address=api_addres
                        headers=headers, data=data
 )
 reqs["/signin (alice:wonderland)"] = r
-
 
 ######
 ###      3.1.3 Endpoint '/signin' avec ('clement', 'mandarine')
@@ -352,7 +337,6 @@ for endpoint in endpoint_list :
 
 output = "{ts} : TestCode={test_code} : Response={response} : Test={test_status}\n"
 
-
 ####################################
 #######
 ####     5. DESCRIPTION ET NOMENCLATURE DES TESTS
@@ -362,7 +346,6 @@ output = "{ts} : TestCode={test_code} : Response={response} : Test={test_status}
 '''
 ============================
     OP tests (Operations tests)
-    Objective : Test that the API is online
 ============================
 
 requests done at "/"
@@ -379,13 +362,11 @@ Test OP_2 : OP_IS_SERVICE_UP_MSG_OK
 | actual result = {message}
 | ==>  {test_message}
 
-
 ============================
     AA tests (Authentication & Authorization tests)
-    Objective : Test authentication and authorization functionalities
 ============================
 
-Test AA_DOES_ALICE_CONNECTION_WORK
+Test AA_1 : AA_DOES_ALICE_CONNECTION_WORK
 | endpoint = '/signin'
 | username = 'alice'
 | password = 'wonderland'
@@ -393,7 +374,7 @@ Test AA_DOES_ALICE_CONNECTION_WORK
 | actual result = {status_code}
 | ==>  {test_status}
 
-Test AA_IS_ALICE_CONNECTION_MSG_OK
+Test AA_2 : AA_IS_ALICE_CONNECTION_MSG_OK
 | endpoint = '/signin'
 | username = 'alice'
 | password = 'wonderland'
@@ -401,106 +382,98 @@ Test AA_IS_ALICE_CONNECTION_MSG_OK
 | actual result = {message}
 | ==>  {test_message}
 
-Test AA_DOES_CLEMENT_CONNECTION_FAIL
+Test AA_3 : AA_DOES_CLEMENT_CONNECTION_FAIL
 | endpoint = '/signin'
 | username = 'clement'
 | password = 'mandarine'
-| expected result = 401
+| expected result = 403 (ou 401 ?)
 | actual result = {status_code}
 | ==>  {test_status}
 
-Test AA_IS_CLEMENT_CONNECTION_MSG_OK (not implemented)
+Test AA_4 : AA_IS_CLEMENT_CONNECTION_MSG_OK
 | endpoint = '/signin'
-| username = 'clement'
-| password = 'mandarine'
-| expected result = "Incorrect username or password"
+| username = 'alice'
+| password = 'wonderland'
+| expected result = "XXXXXXX"
 | actual result = {message}
 | ==>  {test_message}
 
-Test AA_DOES_PERFKNN_WORK
+Test AA_5 : AA_DOES_PERFKNN_WORK
 | endpoint = '/PerfKnn'
-| expected result = 200
-| actual result = {status_code}
-| ==>  {test_status}
+| 0 =< expected result =< 1
+| actual result = {recall} & actual result = {accuracy}
+| ==>  {test_recall} & {test_accuracy}
 
-Test AA_DOES_PERFLOGREG_WORK
+Test AA_6 : AA_DOES_PERFLOGREG_WORK
 | endpoint = '/PerfLogReg'
-| expected result = 200
-| actual result = {status_code}
-| ==>  {test_status}
+| 0 =< expected result =< 1
+| actual result = {recall} & actual result = {accuracy}
+| ==>  {test_recall} & {test_accuracy}
 
-Test AA_DOES_CLEMENT_KNNPREDICTION_FAIL
+Test AA_7 : AA_DOES_CLEMENT_KNNPREDICTION_FAIL
 | endpoint = '/PredictionModelKnn'
 | expected result = 401
 | actual result = {status_code}
 | ==>  {test_status}
 
-Test AA_IS_CLEMENT_KNNPREDICTION_FAIL_MSG_OK
+Test AA_8 : AA_IS_CLEMENT_KNNPREDICTION_FAIL_MSG_OK
 | endpoint = '/PredictionModelKnn'
 | expected result = "Not authenticated"
 | actual result = {detail}
 | ==>  {test_detail}
 
-Test AA_DOES_CLEMENT_LOGREGPREDICTION_FAIL
+Test AA_9 : AA_DOES_CLEMENT_LOGREGPREDICTION_FAIL
 | endpoint = '/PredictionModelLogreg'
 | expected result = 401
 | actual result = {status_code}
 | ==>  {test_status}
 
-Test AA_IS_CLEMENT_LOGREGPREDICTION_FAIL_MSG_OK
+Test AA_10 : AA_IS_CLEMENT_LOGREGPREDICTION_FAIL_MSG_OK
 | endpoint = '/PredictionModelLogreg'
 | expected result = "Not authenticated"
 | actual result = {detail}
 | ==>  {test_detail}
-
-============================
-    INT tests (Integration)
-    Objective : Check that the model works as it used to be in the training program
-    <Index> Identifies a test set
-============================
-
-Test INT_DOES_KNN_INTEGRATIONTEST<INDEX>_WORK
-| endpoint = '/PredictionModelKnn'
-| testvec = 'integration_test_{id}'
-| expected result = 200
-| actual result = {status_code}
-| ==>  {test_status}
-
-Test INT_IS_KNN_INTEGRATIONTEST<INDEX>_CORRECT
-| endpoint = '/PredictionModelKnn'
-| testvec = 'integration_test_{id}'
-| expected result = test_set['integration_test_{id}']['target_KNN']
-| actual result = {response_body}
-| ==>  {test_response_body}
-
-Test INT_DOES_LOGREG_INTEGRATIONTEST<INDEX>_WORK
-| endpoint = '/PredictionModeLogreg'
-| testvec = 'integration_test_{id}'
-| expected result = 200
-| actual result = {status_code}
-| ==>  {test_status}
-
-Test INT_IS_LOGREG_INTEGRATIONTEST<INDEX>_CORRECT
-| endpoint = '/PredictionModelLogreg'
-| testvec = 'integration_test_{id}'
-| expected result = test_set['integration_test_{id}']['target_LogReg']
-| actual result = {response_body}
-| ==>  {test_response_body}
-
 
 ============================
     CT tests (Contents)
-    Objective : Test that the prediction service works fine in a regular use
 ============================
 
-Test CT_DOES_KNN_PREDICTRANDOM_WORK
+Test CT_1 : CT_DOES_KNN_PREDICT0_WORK
+| endpoint = '/PredictionModelKnn'
+| testvec = 'predict_O_in_test_set'
+| expected result = 200
+| actual result = {status_code}
+| ==>  {test_status}
+
+Test CT_2 : CT_IS_KNN_PREDICT0_CORRECT
+| endpoint = '/PredictionModelKnn'
+| testvec = 'predict_O_in_test_set'
+| expected result = 0
+| actual result = {response_body}
+| ==>  {test_response_body}
+
+Test CT_3 : CT_DOES_KNN_PREDICT1_WORK
+| endpoint = '/PredictionModelKnn'
+| testvec = 'predict_O_in_test_set'
+| expected result = 200
+| actual result = {status_code}
+| ==>  {test_status}
+
+Test CT_4 : CT_IS_KNN_PREDICT1_CORRECT
+| endpoint = '/PredictionModelKnn'
+| testvec = 'predict_1_in_test_set'
+| expected result = predict_1_in_test_set
+| actual result = {response_body}
+| ==>  {test_response_body}
+
+Test CT_5 : CT_DOES_KNN_PREDICTRANDOM_WORK
 | endpoint = '/PredictionModelKnn'
 | testvec = 'random_test'
 | expected result = 200
 | actual result = {status_code}
 | ==>  {test_status}
 
-Test CT_IS_KNN_PREDICTRANDOM_CORRECT
+Test CT_6 : CT_IS_KNN_PREDICTRANDOM_CORRECT
 | endpoint = '/PredictionModelKnn'
 | testvec = 'random_test'
 | expected result = ((predicted_class==0 | predicted_class==1)
@@ -513,42 +486,70 @@ Test CT_IS_KNN_PREDICTRANDOM_CORRECT
 | actual result = {response_body}
 | ==>  {test_response_body}
 
-Test CT_DOES_KNN_PREDICTWRONGTYPE_FAIL
+Test CT_7 : CT_DOES_KNN_PREDICTWRONGTYPE_FAIL
 | endpoint = '/PredictionModelKnn'
 | testvec = 'wrong_type_test'
 | expected result = 422
 | actual result = {status_code}
 | ==>  {test_status}
 
-Test CT_IS_KNN_PREDICTWRONGTYPE_MSG_OK (not implemented)
+Test CT_8 : CT_IS_KNN_PREDICTWRONGTYPE_MSG_OK
 | endpoint = '/PredictionModelKnn'
 | testvec = 'wrong_type_test'
 | expected result = "Bad parameters"
 | actual result = {???}
 | ==>  {???}
 
-Test CT_DOES_KNN_PREDICTWITHMISSINGPARAM_FAIL
+Test CT_9 : CT_DOES_KNN_PREDICTWITHMISSINGPARAM_FAIL
 | endpoint = '/PredictionModelKnn'
 | testvec = 'missing_value_test'
 | expected result = 422
 | actual result = {status_code}
 | ==>  {test_status}
 
-Test CT_IS_KNN_PREDICTWITHMISSINGPARAM_MSG_OK (not implemented)
+Test CT_10 : CT_IS_KNN_PREDICTWITHMISSINGPARAM_MSG_OK
 | endpoint = '/PredictionModelKnn'
 | testvec = 'missing_value_test'
 | expected result = "Bad parameters"
 | actual result = {???}
 | ==>  {???}
 
-Test CT_DOES_LOGREG_PREDICTRANDOM_WORK
+Test CT_11 : CT_DOES_LOGREG_PREDICT0_WORK
+| endpoint = '/PredictionModelLogreg'
+| testvec = 'predict_O_in_test_set'
+| expected result = 200
+| actual result = {status_code}
+| ==>  {test_status}
+
+Test CT_12 : CT_IS_LOGREG_PREDICT0_CORRECT
+| endpoint = '/PredictionModelLogreg'
+| testvec = 'predict_O_in_test_set'
+| expected result = 0
+| actual result = {response_body}
+| ==>  {test_response_body}
+
+Test CT_13 : CT_DOES_LOGREG_PREDICT1_WORK
+| endpoint = '/PredictionModelLogreg'
+| testvec = 'predict_O_in_test_set'
+| expected result = 200
+| actual result = {status_code}
+| ==>  {test_status}
+
+Test CT_14 : CT_IS_LOGREG_PREDICT1_CORRECT
+| endpoint = '/PredictionModelLogreg'
+| testvec = 'predict_1_in_test_set'
+| expected result = predict_1_in_test_set
+| actual result = {response_body}
+| ==>  {test_response_body}
+
+Test CT_15 : CT_DOES_LOGREG_PREDICTRANDOM_WORK
 | endpoint = '/PredictionModelLogreg'
 | testvec = 'random_test'
 | expected result = 200
 | actual result = {status_code}
 | ==>  {test_status}
 
-Test CT_IS_LOGREG_PREDICTRANDOM_CORRECT
+Test CT_16 : CT_IS_LOGREG_PREDICTRANDOM_CORRECT
 | endpoint = '/PredictionModelLogreg'
 | testvec = 'random_test'
 | expected result = ((predicted_class==0 | predicted_class==1)
@@ -561,28 +562,28 @@ Test CT_IS_LOGREG_PREDICTRANDOM_CORRECT
 | actual result = {response_body}
 | ==>  {test_response_body}
 
-Test CT_DOES_LOGREG_PREDICTWRONGTYPE_FAIL
+Test CT_17 : CT_DOES_LOGREG_PREDICTWRONGTYPE_FAIL
 | endpoint = '/PredictionModelLogreg'
 | testvec = 'wrong_type_test'
 | expected result = 422
 | actual result = {status_code}
 | ==>  {test_status}
 
-Test CT_IS_LOGREG_PREDICTWRONGTYPE_MSG_OK
+Test CT_18 : CT_IS_LOGREG_PREDICTWRONGTYPE_MSG_OK
 | endpoint = '/PredictionModelLogreg'
 | testvec = 'wrong_type_test'
 | expected result = "Bad parameters"
 | actual result = {???}
 | ==>  {???}
 
-Test CT_DOES_LOGREG_PREDICTWITHMISSINGPARAM_FAIL
+Test CT_19 : CT_DOES_LOGREG_PREDICTWITHMISSINGPARAM_FAIL
 | endpoint = '/PredictionModelLogreg'
 | testvec = 'missing_value_test'
 | expected result = 422
 | actual result = {status_code}
 | ==>  {test_status}
 
-Test CT_IS_LOGREG_PREDICTWITHMISSINGPARAM_MSG_OK (not implemented)
+Test CT_20 : CT_IS_LOGREG_PREDICTWITHMISSINGPARAM_MSG_OK
 | endpoint = '/PredictionModelLogreg'
 | testvec = 'missing_value_test'
 | expected result = "Bad parameters"
@@ -672,7 +673,6 @@ def TBD(test_code, response, expected_value) :
                          test_status='TBD', \
                          ts=ts)
 
-
 ##############
 #####
 ##       6.2 Paramétrage des tests
@@ -704,11 +704,11 @@ test_code_map = {
         'response':reqs["/signin (clement:mandarine)"],
         'expected_result':401
     },
-    "AA_IS_CLEMENT_CONNECTION_MSG_OK":{
-        'test_func':test_value,
-        'response':reqs["/signin (clement:mandarine)"].json()['message'],
-        'expected_result':'Incorrect username or password'
-    },
+#    "AA_IS_CLEMENT_CONNECTION_MSG_OK":{
+#        'test_func':test_value,
+#        'response':reqs["/token (clement:mandarine)"].json()['detail'],
+#        'expected_result':'Incorrect username or password'
+#    },
     "AA_DOES_PERFKNN_WORK":{
         'test_func':test_status,
         'response':reqs["/PerfKnn"],
@@ -739,6 +739,26 @@ test_code_map = {
         'response':reqs["/PredictionModelLogreg - Non connecté"].json()['detail'],
         'expected_result':"Not authenticated"
     },
+    "CT_DOES_KNN_PREDICT0_WORK":{
+        'test_func':test_status,
+        'response':reqs['/PredictionModelKnn - Connecté - predict_O_in_test_set'],
+        'expected_result':200
+    },
+    "CT_IS_KNN_PREDICT0_CORRECT":{
+        'test_func':test_value,
+        'response':reqs['/PredictionModelKnn - Connecté - predict_O_in_test_set'].json(),
+        'expected_result':test_set["predict_O_in_test_set"]['target_KNN']
+    },
+    "CT_DOES_KNN_PREDICT1_WORK":{
+        'test_func':test_status,
+        'response':reqs['/PredictionModelKnn - Connecté - predict_1_in_test_set'],
+        'expected_result':200
+    },
+    "CT_IS_KNN_PREDICT1_CORRECT":{
+        'test_func':test_value,
+        'response':reqs['/PredictionModelKnn - Connecté - predict_1_in_test_set'].json(),
+        'expected_result':test_set["predict_1_in_test_set"]['target_KNN']
+    },
     "CT_DOES_KNN_PREDICTRANDOM_WORK":{
         'test_func':test_status,
         'response':reqs['/PredictionModelKnn - Connecté - random_test'],
@@ -768,6 +788,26 @@ test_code_map = {
         'test_func':TBD,
         'response':reqs['/PredictionModelKnn - Connecté - missing_value_test'].json(),
         'expected_result':np.nan
+    },
+    "CT_DOES_LOGREG_PREDICT0_WORK":{
+        'test_func':test_status,
+        'response':reqs['/PredictionModelLogreg - Connecté - predict_O_in_test_set'],
+        'expected_result':200
+    },
+    "CT_IS_LOGREG_PREDICT0_CORRECT":{
+        'test_func':test_value,
+        'response':reqs['/PredictionModelLogreg - Connecté - predict_O_in_test_set'].json(),
+        'expected_result':test_set["predict_O_in_test_set"]['target_LogReg']
+    },
+    "CT_DOES_LOGREG_PREDICT1_WORK":{
+        'test_func':test_status,
+        'response':reqs['/PredictionModelLogreg - Connecté - predict_1_in_test_set'],
+        'expected_result':200
+    },
+    "CT_IS_LOGREG_PREDICT1_CORRECT":{
+        'test_func':test_value,
+        'response':reqs['/PredictionModelLogreg - Connecté - predict_1_in_test_set'].json(),
+        'expected_result':test_set["predict_1_in_test_set"]['target_LogReg']
     },
     "CT_DOES_LOGREG_PREDICTRANDOM_WORK":{
         'test_func':test_status,
@@ -801,36 +841,16 @@ test_code_map = {
     }
 }
 
-# Ajout des tests d'intégration à test_code_map
-integration_req_list = [value for value in reqs.keys() if 'integration' in value]
-
-for req in integration_req_list :
-    if 'Knn' in req : (algo, target_algo) = ('KNN', 'KNN')
-    if 'Logreg' in req : (algo, target_algo) = ('LOGREG', 'LogReg')
-    id = req.split("_")[-1]
-
-    test_code_map['INT_DOES_'+algo+'_INTEGRATIONTEST'+id+'_WORK'] = dict(
-                test_func=test_status,
-                response=reqs[req],
-                expected_result=200
-    )
-
-    test_code_map['INT_IS_'+algo+'_INTEGRATIONTEST'+id+'_CORRECT'] = dict(
-                test_func=test_value,
-                response=reqs[req].json(),
-                expected_result=test_set["integration_test_"+id]['target_'+target_algo]
-    )
-
 
 ##############
 #####
 ##       6.3 Exécution des tests
 #
-
 for key, value in test_code_map.items() :
     test_code = key
     test_func = value['test_func']
     response = value['response']
     expected_result = value['expected_result']
+    
     echo_log(test_func(test_code, response, expected_result))
-time.sleep(1000)
+time.sleep(1000)    
